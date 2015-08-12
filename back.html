@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
+  <title>Keepgram</title>
+
+  <!-- CSS  -->
+  <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+
+  <!-- Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Chrome Color Bar -->
+  <meta name="theme-color" content="#42A5F5">
+
+  <!--  Scripts-->
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.96.1/js/materialize.min.js"></script>
+  <script src="js/init.js"></script>
+  <script type="text/javascript">
+
+// Create Array
+var searches = new Array;
+var username = $("#username").val();
+
+// If Array is not empty, parse Array
+if(searches != []) {
+  searches = JSON.parse(localStorage["searches"] || '[]');
+}
+
+// On load check if Array is empty
+$(document).ready(function() {
+  if (searches == undefined || searches == null || searches.length == 0){
+      console.log("No Searches")
+      //$("#recentsearches").append('<p class="flow-text" style="color: black;>No Recent Searches</p>');
+  } else {
+    getSearches();
+  }
+  	// Hide Navbar after clicking on Name
+	$("#recentsearches a").click('click',function () {
+		$('.button-collapse').sideNav('hide');
+	})
+	// Make video play/pause on Click
+	$(document).on('click', '#video', function (e) {
+	    var video = $(this).get(0);
+	    if (video.paused === false) {
+	        video.pause();
+	    } else {
+	        video.play();
+	    }
+	    return false;
+	})
+});
+
+function getSearches() {
+  //var retrievedData = localStorage.getItem("searches");
+  var allSearches = JSON.parse(localStorage["searches"]);
+  console.log(allSearches);
+
+  // Loop through all Searches and Append them in the Side Nav
+  for(var i = 0; i < allSearches.length; i++){
+    $("#recentsearches").append("<a id='uSearch' onclick=lookupID('" + allSearches[i] + "');>@" + allSearches[i] + "</a><br/>");
+  } 
+}
+
+// Open Modal
+function openSettings(){
+  $('#settings').openModal();
+}
+
+$(function () {
+	// On click load pictures
+    $('#go').bind("click", function () {
+      var username = $("#username").val();
+        lookupID(username);
+    });
+    // Enter on textbox calls the Function
+    $('#username').bind("keypress", function(e) {
+            if (e.keyCode == 13) {
+              var username = $("#username").val();
+              lookupID(username);
+            }
+    });
+});
+
+
+// Look up ID and show Pictures
+function lookupID(username) {
+    //var result = $('.result');
+    //var resultContainer = $('.result-container');
+    //var username = $("#username").val();
+
+    // If input is not empty, place input into Array
+    if(username != null){
+   	// Check if Value excists in Array
+      var x = $.inArray(username, searches);
+      // If not, Push to Array
+      if (x == -1) {
+		  searches.push(username);
+		  localStorage["searches"] = JSON.stringify(searches);
+		// Else Remove from Array
+		} else {
+		  searches.splice(x, 1);
+		}
+      
+      
+    }
+
+    //resultContainer.addClass("hide");
+
+    //result.find(".text").empty();
+    //result.find(".avatar").empty();
+    //result.find(".id").empty();
+    //console.log(username);
+
+
+    // Ajax call to Instagram API to get the userid from the Username
+    $.ajax({
+        url: "https://api.instagram.com/v1/users/search?client_id=b418fc7be18041af9198ab8ef85317d2&q=" + username + "&callback=?",
+        dataType: "json",
+        username: username,
+        success: function (data) {
+          // Console log Recieved data for Testing Purposes
+            console.log(data);
+            console.log(data.data.length);
+            console.log(this.username);
+            for (i = 0; i < data.data.length; ++i) {
+                var userid = data.data[i].id;
+                if (this.username == data.data[i].username) {
+                    
+                    // Old Result container
+
+                    //var avatar = "<a href='" + data.data[i].profile_picture + "' class='thumbnail' target='_blank'><img src='" + data.data[i].profile_picture + "' alt=''></a>";
+                    //$(".result .avatar").append(avatar);
+
+                    //var id = "<h4>User ID: " + userid + "<br /></h4>";
+                    //$(".result .id").prepend(id);
+
+                    //var username = "Username: " + data.data[i].username + "<br />";
+                    //$(".result .text").append(username);
+
+
+                    // After getting the username, use the UserID to get the users Feed from the Instagram API
+                    $.ajax({
+                        type: "GET",
+                        dataType: "jsonp",
+                        url: "https://api.instagram.com/v1/users/"+ userid +"/media/recent/?client_id=b418fc7be18041af9198ab8ef85317d2",
+                        success: function (data) {
+                          // Empty the Picture div,
+                            $(".pics").empty();
+                            $(".videos").empty();
+                            // Get the # of Pictures preferred from the Settings Menu
+                            var e = document.getElementById("maxPhoto");
+                            var maxPhotos = e.options[e.selectedIndex].value;
+                            // Loops through all the Recieved Pictures
+                            for (var i = 0; i < maxPhotos; i++) {
+                                function loadImages() {
+                                  // Place all the Pictures in the Picture Div
+                                    $(".pics").append("<div class='col s12 m6 l3'><a download='instagram-" + data.data[i].created_time + ".png' href='" + data.data[i].images.standard_resolution.url + "'><img src='" + data.data[i].images.standard_resolution.url + "'></img></a><br/><br/></div> ");   
+                                }
+                                function loadVideos() {
+                                	// Check for Videos
+							        if(data.data[i].type == "video") {
+							        	//Place videos inside the Videos Div
+							          $(".videos").append("<div class='col s12 m6 l3'><video id='video' class='responsive-video' src='" + data.data[i].videos.standard_resolution.url + "'></video><center><a class='waves-effect waves-light btn' href='" + data.data[i].videos.standard_resolution.url + "' download><i class='mdi-file-cloud-download left'></i> Download as .mp4</a></center><hr/></div> "); 
+							          // If none are found, show error.
+										if(data.data[i].videos.standard_resolution.url == null)
+								        {
+										  $(".videos").append("<div class='col s12 m6 l3'><p>No videos found.</p> ");
+								        }      
+							        }
+                                }
+                                // Call function after getting all the Photos
+                            loadImages();
+                            loadVideos();
+                            }
+                        }
+                    })
+                    //resultContainer.removeClass("hide");
+                }
+            }
+        }
+    });
+ }
+</script>
+
+<body>
+
+<!-- Navbar -->
+
+  <nav>
+    <div class="nav-wrapper">
+      <a class="brand-logo">Keepgram</a>
+      <a href="#" id="sideRecents" data-activates="recents" class="button-collapse"><i class="mdi-navigation-menu"></i></a>
+      <ul class="right">
+        <li><a onclick="openSettings()" class="waves-effect waves-light"><i class="small mdi-action-settings"></i></a></li>
+      </ul>
+      <ul class="side-nav" id="recents">
+        <li><p class="flow-text" style="color: black;">Recent Searches<p><hr/></li>
+          <div id="recentsearches">
+          </div>
+      </ul>
+    </div>
+  </nav>
+
+<!-- Content -->
+<div class="container">
+          <div class="row">
+            <div class="card z-depth-1">
+              <div class="card-content">
+                <div class="row">
+				<ul class="tabs">
+				        <li class="tab col s1"><a class="active" href="#pics">Images</a></li>
+				        <li class="tab col s1"><a href="#videos">Videos</a></li>
+				 </ul>
+                  <div class="input-field col s12">
+                    <i class="mdi-action-account-circle prefix"></i>
+                    <input id="username" type="text" class="validate">
+                    <label for="username">Username</label>
+                      <div>
+                        <a id="go" class="right">Search</a>
+                      </div>
+                  </div>
+                </div>
+              </div>
+            <div class="row">
+              <div class="card-image">
+                <div id="pics" class="pics"></div>
+                <div id="videos" class="videos"></div>
+              </div>
+            </div>
+
+</div>
+
+  <!-- Modal Structure -->
+  <div id="settings" class="modal">
+    <div class="modal-content">
+      <h4>Settings</h4>
+        <label>Max. # Photos</label>
+        <select id="maxPhoto" class="browser-default">
+          <option value="5" disabled selected>Choose your option</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+        </select>
+        <p class="flow-text">Sadly, Instagram only allows us to display 20 pictures at a time. I am working on a work around!<hr/>Made with &#10084; by Lars </p>
+    </div>
+    <div class="modal-footer">
+      <a href="#" onclick="lookupID()" class="waves-effect waves-green btn-flat modal-action modal-close">Save</a>
+    </div>
+  </div>
+  </body>
+</html>
