@@ -9,11 +9,12 @@ Feature list:
  * Easy to use UI
  * Use diffrent Settings
  * View and Save Videos
+ * More to come :tada:
 
 
 I'm not good at writing README's so I'll keep it short.
 
-Here is the [DEMO](https://github.com/jbt/markdown-editor) so let me know if I've screwed it somewhere.  :+1:
+Here is the [DEMO](https://github.com/ljeremy/keepgram/index.html) so let me know if I've screwed it somewhere.  :+1:
 
 
 
