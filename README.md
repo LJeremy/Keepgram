@@ -17,7 +17,7 @@ Well, saving images from Instagram is a pain, you either need to screenshot it o
 
 I'm not good at writing README's so I'll keep it short.
 
-Here is the [DEMO](https://lars.ninja/insta/) so let me know if I've screwed it somewhere.  :+1:
+Here is the [DEMO](http://ljeremy.github.io/Keepgram) so let me know if I've screwed it somewhere.  :+1:
 
 Any suggestions? Let me know. :wink:
 
