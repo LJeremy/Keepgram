@@ -4,7 +4,7 @@
 
 Keepgram is an easy to use Instagram Downloader, available on the web and as an Android app.
 
-####Feature list:
+#### Feature list:
 
  * Simple User Search
  * Save images by tapping on them
@@ -13,7 +13,7 @@ Keepgram is an easy to use Instagram Downloader, available on the web and as an 
  * View and Save Videos
  * More to come :tada:
  
-####Why?
+#### Why?
 
 Well, saving images from Instagram is a pain, you either need to screenshot it on Mobile or search through the source code on the web. _Aren't there apps for that?_ Well, Yes... But I didn't like most of them, and needed to learn some more jQuery. My code is still a mess, but I will clean it up. I Promise.
 
